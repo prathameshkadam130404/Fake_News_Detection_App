@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+  # Service for training the model
+  model-training:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./Datasets:/app/Datasets
+      - ./model:/app/model
+    networks:
+      - fake-news-network
+
+  # Service for the Streamlit app
+  streamlit-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.app
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./model:/app/model
+      - ./.env:/app/.env
+    depends_on:
+      - model-training
+    networks:
+      - fake-news-network
+    environment:
+      - NEWS_API_KEY=${NEWS_API_KEY}
+
+networks:
+  fake-news-network:
+    driver: bridge 
